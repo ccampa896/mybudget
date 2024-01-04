@@ -1,6 +1,1 @@
-,Valor,Fixo,Data,Categoria,Descrição
-0,75.0,0,2024-01-03,Dinheiro,Pote 5l
-1,35.0,0,2023-12-30,Dinheiro,Pote 2l
-2,153.0,0,2023-12-29,Débito,Peso
-3,75.0,0,2023-12-28,Débito,Pote 5l
-4,11095.5,0,2023-12-27,Débito,Saldo do dia
+,Categoria,Data,Valor,Descrição,Fixo
