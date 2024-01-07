@@ -11,7 +11,7 @@ VALID_USERNAME_PASSWORD_PAIRS = {
 }
 
 app = dash.Dash(__name__, external_stylesheets=estilos + [dbc_css])
-
+app.title = "Flor de Mel"
 
 app.config['suppress_callback_exceptions'] = True
 auth = dash_auth.BasicAuth(
