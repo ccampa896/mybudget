@@ -291,7 +291,7 @@ def salve_form_receita(n, descricao, valor, date, switches, categoria, dict_rece
         fixa = 1 if 2 in switches else 0
         
         # Criar um novo DataFrame com a nova linha
-        new_row = pd.DataFrame([[valor, fixa, date, categoria, descricao]], 
+        new_row = pd.DataFrame([[categoria, date, valor, descricao, fixa]], 
                                columns=df_receitas.columns)
 
         # Concatenar o novo DataFrame com o DataFrame existente, colocando a nova linha no topo
@@ -326,7 +326,7 @@ def salve_form_despesa(n, descricao, valor, date, switches, categoria, dict_desp
         fixa = 1 if 2 in switches else 0
         
         # Criar um novo DataFrame com a nova linha
-        new_row = pd.DataFrame([[valor, fixa, date, categoria, descricao]], 
+        new_row = pd.DataFrame([[categoria, date, valor, descricao, fixa]], 
                                columns=df_despesas.columns)
 
         # Concatenar o novo DataFrame com o DataFrame existente, colocando a nova linha no topo
