@@ -22,6 +22,7 @@ Utilizando apenas **PYTHON** e as bibliotecas:
 > - Dash Bootstrap
 > - Plotly
 > - Pandas
+> - Dash-Auth
 
 ## 📜 Conteúdo
 
