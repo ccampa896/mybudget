@@ -3,6 +3,7 @@ import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from app import *
 from app import app
 
 from datetime import datetime, date
@@ -10,6 +11,7 @@ import plotly.express as px
 import numpy as np
 import pandas as pd
 from globals import *
+from conexao_banco import *
 import pdb
 
 from flask import send_file
@@ -289,17 +291,11 @@ def salve_form_receita(n, descricao, valor, date, switches, categoria, dict_rece
         date = pd.to_datetime(date).date()
         categoria = categoria[0] if type(categoria) == list else categoria
         fixa = 1 if 2 in switches else 0
-        
-        # Criar um novo DataFrame com a nova linha
-        new_row = pd.DataFrame([[categoria, date, valor, descricao, fixa]], 
-                               columns=df_receitas.columns)
-
-        # Concatenar o novo DataFrame com o DataFrame existente, colocando a nova linha no topo
-        df_receitas = pd.concat([new_row, df_receitas]).reset_index(drop=True)
-        
-        
-        df_receitas.to_csv("df_receitas.csv")
+        inserir_receita(categoria, date, valor, descricao, fixa, conn)
     
+    # Após a inserção atualizar o store-receitas
+    df_receitas = read_data("SELECT * FROM receitas", conn)
+
     data_return = df_receitas.to_dict()
     return data_return
 
@@ -325,16 +321,10 @@ def salve_form_despesa(n, descricao, valor, date, switches, categoria, dict_desp
         categoria = categoria[0] if type(categoria) == list else categoria
         fixa = 1 if 2 in switches else 0
         
-        # Criar um novo DataFrame com a nova linha
-        new_row = pd.DataFrame([[categoria, date, valor, descricao, fixa]], 
-                               columns=df_despesas.columns)
-
-        # Concatenar o novo DataFrame com o DataFrame existente, colocando a nova linha no topo
-        df_despesas = pd.concat([new_row, df_despesas]).reset_index(drop=True)
+        inserir_despesas(categoria, date, valor, descricao, fixa, conn)
         
-        
-        df_despesas.to_csv("df_despesas.csv")
-    
+    # Após a inserção atualizar o store-despesas
+    df_despesas = read_data("SELECT * FROM despesas", conn)
     data_return = df_despesas.to_dict()
     return data_return
 
@@ -350,28 +340,30 @@ def salve_form_despesa(n, descricao, valor, date, switches, categoria, dict_desp
         Input("add-category-despesa", "n_clicks"),
         Input("remove-category-despesa", "n_clicks"),
     ],
-    
     [
         State("input-add-despesa", "value"),
         State("checklist-selected-style-despesa", "value"),
         State("stored-cat-despesas", "data")
     ]
 )
-def add_category(n, n2, txt, check_delete, data):
-    cat_despesa = list(data['Categoria'].values())
-    if n and not(txt == '' or txt == None):
-        cat_despesa = cat_despesa + [txt] if txt not in cat_despesa else cat_despesa
+def add_category(n_add, n_remove, txt, check_delete, data):
+    ctx = dash.callback_context
+    triggered = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    if n2:
-        if len(check_delete) > 0:
-            cat_despesa = [i for i in cat_despesa if i not in check_delete]
-    
-    opt_despesa = [{'label': i, 'value': i} for i in cat_despesa]
-    df_cat_despesa = pd.DataFrame(cat_despesa, columns=['Categoria'])
-    df_cat_despesa.to_csv("df_cat_despesa.csv")
+    if triggered == "add-category-despesa" and txt and txt not in data['nome_categoria'].values():
+        inserir_categoria(txt, conn, 'cat_despesas')
+
+    if triggered == "remove-category-despesa" and check_delete:
+        for categoria in check_delete:
+            deletar_categoria(categoria, conn, 'cat_despesas')
+
+    # Após a inserção ou remoção, atualizar a lista de categorias
+    df_cat_despesa = read_data("SELECT nome_categoria FROM cat_despesas", conn)
     data_return = df_cat_despesa.to_dict()
-    
+    opt_despesa = [{'label': i, 'value': i} for i in df_cat_despesa['nome_categoria']]
+
     return [opt_despesa, opt_despesa, [], data_return]
+
 
 @app.callback(
     [
@@ -391,20 +383,22 @@ def add_category(n, n2, txt, check_delete, data):
         State("stored-cat-receitas", "data")
     ]
 )
-def add_category(n, n2, txt, check_delete, data):
-    cat_receita = list(data['Categoria'].values())
-    if n and not(txt == '' or txt == None):
-        cat_receita = cat_receita + [txt] if txt not in cat_receita else cat_receita
+def add_category(n_add, n_remove, txt, check_delete, data):
+    ctx = dash.callback_context
+    triggered = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    if n2:
-        if len(check_delete) > 0:
-            cat_receita = [i for i in cat_receita if i not in check_delete]
-    
-    opt_receita = [{'label': i, 'value': i} for i in cat_receita]
-    df_cat_receita = pd.DataFrame(cat_receita, columns=['Categoria'])
-    df_cat_receita.to_csv("df_cat_receita.csv")
+    if triggered == "add-category-receita" and txt and txt not in data['nome_categoria'].values():
+        inserir_categoria(txt, conn, 'cat_receitas')
+
+    if triggered == "remove-category-receita" and check_delete:
+        for categoria in check_delete:
+            deletar_categoria(categoria, conn, 'cat_receitas')
+
+    # Após a inserção ou remoção, atualizar a lista de categorias
+    df_cat_receita = read_data("SELECT nome_categoria FROM cat_receitas", conn)
     data_return = df_cat_receita.to_dict()
-    
+    opt_receita = [{'label': i, 'value': i} for i in df_cat_receita['nome_categoria']]
+
     return [opt_receita, opt_receita, [], data_return]
 
 @app.callback(

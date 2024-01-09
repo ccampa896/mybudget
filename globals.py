@@ -1,40 +1,23 @@
 import pandas as pd
 import os
+from app import *
+from conexao_banco import *
 
+try:
+    # Lendo as categorias de receitas e despesas
+    df_cat_receita = read_data("SELECT nome_categoria FROM cat_receitas", conn)
+    df_cat_despesa = read_data("SELECT nome_categoria FROM cat_despesas", conn)
+    cat_receita = df_cat_receita['nome_categoria'].tolist()
+    cat_despesa = df_cat_despesa['nome_categoria'].tolist()
 
-if ("df_despesas.csv" in os.listdir()) and ("df_receitas.csv" in os.listdir()):
+    # Lendo as tabelas de despesas e receitas
+    df_despesas = read_data("SELECT * FROM despesas", conn)
+    df_receitas = read_data("SELECT * FROM receitas", conn)
 
-    df_despesas = pd.read_csv("df_despesas.csv", index_col=0)
-    df_receitas = pd.read_csv("df_receitas.csv", index_col=0)
-    df_despesas["Data"] = pd.to_datetime(df_despesas["Data"], format='%Y-%m-%d')
-    df_receitas["Data"] = pd.to_datetime(df_receitas["Data"], format='%Y-%m-%d')
-    df_despesas["Data"] = df_despesas["Data"].apply(lambda x: x.date())
-    df_receitas["Data"] = df_receitas["Data"].apply(lambda x: x.date())
+    # Convertendo a coluna 'Data' para o formato de data
+    df_despesas["Data"] = pd.to_datetime(df_despesas["Data"]).dt.date
+    df_receitas["Data"] = pd.to_datetime(df_receitas["Data"]).dt.date
 
-else:
-    data_structure = {'Categoria':[],
-        'Data':[],
-        'Valor':[],
-        'Descrição':[],
-        'Fixo':[],}
-
-    df_receitas = pd.DataFrame(data_structure)
-    df_despesas = pd.DataFrame(data_structure)
-    df_despesas.to_csv("df_despesas.csv")
-    df_receitas.to_csv("df_receitas.csv")
-
-
-if ("df_cat_receita.csv" in os.listdir()) and ("df_cat_despesa.csv" in os.listdir()):
-    df_cat_receita = pd.read_csv("df_cat_receita.csv", index_col=0)
-    df_cat_despesa = pd.read_csv("df_cat_despesa.csv", index_col=0)
-    cat_receita = df_cat_receita.values.tolist()
-    cat_despesa = df_cat_despesa.values.tolist()
-
-else:    
-    cat_receita = {'Categoria': ["Cartão", "Pix", "Dinheiro"]}
-    cat_despesa = {'Categoria': ["Energia", "Aluguel", "Água", "Produtos"]}
-    
-    df_cat_receita = pd.DataFrame(cat_receita, columns=['Categoria'])
-    df_cat_despesa = pd.DataFrame(cat_despesa, columns=['Categoria'])
-    df_cat_receita.to_csv("df_cat_receita.csv")
-    df_cat_despesa.to_csv("df_cat_despesa.csv")
+finally:
+    # Fecha a conexão
+    conn.close()

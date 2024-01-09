@@ -3,10 +3,27 @@ import dash_bootstrap_components as dbc
 import dash_auth
 import os
 import json
+from conexao_banco import *
 
 from dotenv import load_dotenv
 
 load_dotenv()  # Isso carrega as variáveis de ambiente do arquivo .env
+
+# Obtendo as credenciais do banco de dados a partir das variáveis de ambiente
+DB_HOST = os.environ.get('DB_HOST')
+DB_PORT = os.environ.get('DB_PORT')
+DB_NAME = os.environ.get('DB_NAME')
+DB_USER = os.environ.get('DB_USER')
+DB_PASSWORD = os.environ.get('DB_PASSWORD')
+
+# Conecta ao banco de dados
+conn = psycopg2.connect(
+    dbname=DB_NAME, 
+    user=DB_USER, 
+    password=DB_PASSWORD, 
+    host=DB_HOST, 
+    port=DB_PORT
+)
 
 credenciais_str = os.environ.get('CREDENCIAIS', '{}')
 VALID_USERNAME_PASSWORD_PAIRS = json.loads(credenciais_str)

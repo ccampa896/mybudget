@@ -23,10 +23,11 @@ Utilizando apenas **PYTHON** e as bibliotecas:
 > - Plotly
 > - Pandas
 > - Dash-Auth
+> - psycopg2
 
 ## 📜 Conteúdo
 
-O projeto foi desenvolvido seguindo as aulas do Projeto MyBudget, da Asimov Academy, com algumas modificações e adições de funcionalidades.
+O projeto foi desenvolvido seguindo as aulas do Projeto MyBudget, da Asimov Academy, com algumas modificações e adições de funcionalidades. A principal modificação foi alterar o armazenamento das informações de arquivos CSV para integração com banco de dados PostgresSQL.
 
 <a href = "https://asimov.academy/"><img src="https://img.shields.io/badge/ASIMOV-Saiba%20Mais-lightgrey" target="_blank"></a>
 
