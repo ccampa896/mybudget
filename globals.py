@@ -18,3 +18,4 @@ df_receitas = read_data("SELECT * FROM receitas", conn)
 df_despesas["Data"] = pd.to_datetime(df_despesas["Data"]).dt.date
 df_receitas["Data"] = pd.to_datetime(df_receitas["Data"]).dt.date
 
+
