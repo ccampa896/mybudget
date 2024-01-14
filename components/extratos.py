@@ -1,5 +1,5 @@
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash import dash_table
 from dash.dash_table.Format import Group
 from dash import dcc
@@ -7,6 +7,10 @@ from dash import html
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
+from conexao_banco import *
+from globals import *
+from datetime import datetime, date
+
 
 
 from app import app
@@ -35,7 +39,22 @@ layout = dbc.Col([
             )
         ], width=3)
     ]),
-    html.Br(),
+        html.Br(),
+        html.Br(),
+        
+        html.Div(
+                [
+                    dbc.Button("Remover despesa", id='btn-remover-despesa', color='danger'),
+                    html.Span(" ", style={"width": "50px"}),  # Espaçador entre os botões
+                    dbc.Button("Atualizar despesa", id='btn-atualizar-despesa', color='warning')
+                ],
+                    style={'display': 'flex', 'justifyContent': 'center'}
+                ),
+        
+        html.Br(),
+        html.Br(),
+        
+        
         dbc.Row([
         html.Legend('Tabela de Receitas'),
         html.Div(id='tabela-receitas', className='dbc')
@@ -57,10 +76,10 @@ layout = dbc.Col([
                 ], style={'text-align': 'center', 'padding-top': '30px'})
             )
         ], width=3)
-    ])
+    ]),
 
+], style={'padding': '10px'}),
 
-], style={'padding': '10px'})
 
 # =========  Callbacks  =========== #
 # Tabela despesas

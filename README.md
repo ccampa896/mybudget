@@ -2,7 +2,7 @@
 
 # MyBudget
 
-<p align="justify"> Projeto de um app web de análise financeira usando apenas Python, com base de dados em arquivos CSV no computador do usuário. O projeto serviu de base para Web App de análise financeira para a <a href="https://www.instagram.com/flordemel_sorveteria?igsh=MTNnOWM3aXluc3Nuag==">Sorveteria Flor de Mel<a/>!</p>
+<p align="justify"> Projeto de um app web de análise financeira usando apenas Python, com base de dados em um SGBD PostgreSQL. O projeto serviu de base para Web App de análise financeira para a <a href="https://www.instagram.com/flordemel_sorveteria?igsh=MTNnOWM3aXluc3Nuag==">Sorveteria Flor de Mel<a/>!</p>
 
 ## 🔧 Funções
 
@@ -23,11 +23,17 @@ Utilizando apenas **PYTHON** e as bibliotecas:
 > - Plotly
 > - Pandas
 > - Dash-Auth
-> - psycopg2
+> - psycopg2 (driver de conexão com o banco de dados PostgreSQL)
+
+Sistema Gerenciador de Banco de Dados: **PostgreSQL**.
 
 ## 📜 Conteúdo
 
-O projeto foi desenvolvido seguindo as aulas do Projeto MyBudget, da Asimov Academy, com algumas modificações e adições de funcionalidades. A principal modificação foi alterar o armazenamento das informações de arquivos CSV para integração com banco de dados PostgresSQL.
+<p align="justify">O projeto foi desenvolvido seguindo as aulas do Projeto MyBudget, da Asimov Academy, com algumas modificações e adições de funcionalidades. A principal modificação foi alterar o armazenamento das informações de arquivos CSV para integração com banco de dados PostgreSQL. Além disso, foram adicionadas as funcionalidades de exportar os dados para um arquivo CSV e baixá-lo, e de visualizar os dados de forma mais minuciosa e completa, na página de extratos, contento as informações de cada receita e despesa.</p>
+
+<p align="justify">Além disso, foi incluído botões para atualizar e remover os registros realizados, completando as funcionalidades básicas de um banco de dados: LER, INSERIR, REMOVER e DELETAR.</p>
+
+<p aling="justify">O sistema ainda conta com autenticação de usuário de forma simples, utilizando a biblioteca <i>dash_auth</i>, que armazena dados de login e senha em variáveis de ambiente.</p>
 
 <a href = "https://asimov.academy/"><img src="https://img.shields.io/badge/ASIMOV-Saiba%20Mais-lightgrey" target="_blank"></a>
 
@@ -55,6 +61,8 @@ O projeto foi desenvolvido seguindo as aulas do Projeto MyBudget, da Asimov Acad
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" height="40" alt="vscode logo"  />
   <img width="12" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="40" alt="python logo"  />
+  <img width="12" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" height="40" alt="postgresql logo"  />
 </div>
 
 ###
