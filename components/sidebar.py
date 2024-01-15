@@ -349,6 +349,7 @@ layout = dbc.Col([
                 [
                     dbc.NavLink("Dashboard", href="/dashboards", active="exact"),
                     dbc.NavLink("Extratos", href="/extratos", active="exact"),
+                    dbc.NavLink("Análises", href="/analises", active="exact"),
                 ], vertical=True, pills=True, id='nav_buttons', style={"margin-bottom": "50px"}),
             ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.BOOTSTRAP}),
             html.Br(),

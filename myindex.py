@@ -11,7 +11,7 @@ from globals import *
 
 
 from app import *
-from components import sidebar, dashboards, extratos
+from components import sidebar, dashboards, extratos, analises
 
 
 # =========  Layout  =========== #
@@ -45,6 +45,8 @@ def render_page(pathname):
         return dashboards.layout
     if pathname == '/extratos':
         return extratos.layout
+    if pathname == '/analises':
+        return analises.layout
 
 
 if __name__ == '__main__':

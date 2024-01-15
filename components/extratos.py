@@ -42,18 +42,6 @@ layout = dbc.Col([
         html.Br(),
         html.Br(),
         
-        html.Div(
-                [
-                    dbc.Button("Remover despesa", id='btn-remover-despesa', color='danger'),
-                    html.Span(" ", style={"width": "50px"}),  # Espaçador entre os botões
-                    dbc.Button("Atualizar despesa", id='btn-atualizar-despesa', color='warning')
-                ],
-                    style={'display': 'flex', 'justifyContent': 'center'}
-                ),
-        
-        html.Br(),
-        html.Br(),
-        
         
         dbc.Row([
         html.Legend('Tabela de Receitas'),
