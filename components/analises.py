@@ -1,4 +1,4 @@
-from dash import html, dcc
+from dash import html, dcc, dash_table
 from dash.dependencies import Input, Output, State
 from datetime import date, datetime, timedelta
 import dash_bootstrap_components as dbc
@@ -104,9 +104,31 @@ layout = dbc.Col([
     dbc.Row([
         dbc.Col([
             dbc.Card([
+                html.Legend('Filtrar por tipo', className='card-title d-flex justify-content-center align-items-center'),
+                dcc.Checklist(
+                    id='checklist-tipo',
+                    options=[
+                        {'label': 'Receita', 'value': 'Receita'},
+                        {'label': 'Despesa', 'value': 'Despesa'}],
+                    value=['Receita', 'Despesa'],
+                    persistence=True,
+                    persistence_type='session',
+                    labelStyle={'display': 'inline-block',
+                                'margin-left': '10px',
+                                'margin-right': '15px',
+                                'font-size': '20px'},  # Estilo para cada checkbox,
+                    inputStyle={'margin-right': '5px'},
+                    style={'width': '100%', 'text-align': 'center'},  # Estilo para o container dos checkboxes)
+                    ),
+            ], style={'height': '100%', 'padding': '20px'})
+        ], width=12, className='d-flex justify-content-center align-items-center'),
+    ]),
+    html.Br(),
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
                 html.Legend('Média por ano(s)', className='card-title'),
                 html.Div(id='media-anual', className='card-text'),
-                html.Div(id='media-ano', className='card-text'),
             ], style={'height': '100%',
                       'padding': '20px',
                       'font-size': '20px'})
@@ -115,7 +137,6 @@ layout = dbc.Col([
             dbc.Card([
                 html.Legend('Média por mês', className='card-title'),
                 html.Div(id='media-mensal', className='card-text'),
-                html.Div(id='media-mes', className='card-text'),
             ], style={'height': '100%',
                       'padding': '20px',
                       'font-size': '20px'})
@@ -123,8 +144,35 @@ layout = dbc.Col([
         dbc.Col([
             dbc.Card([
                 html.Legend('Média por dia da semana', className='card-title'),
-                html.Div(id='media-diaria', className='card-text'),
-                html.Div(id='media-dia', className='card-text'),
+                html.Div(id='media-diaria', className='card-text')
+            ], style={'height': '100%',
+                      'padding': '20px',
+                      'font-size': '20px'})
+        ], width=4),
+    ]),
+    html.Br(),
+    html.Br(),
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                html.Legend('Saldo anual', className='card-title'),
+                html.Div(id='saldo-anual', className='card-text'),
+            ], style={'height': '100%',
+                      'padding': '20px',
+                      'font-size': '20px'})
+        ], width=4),
+        dbc.Col([
+            dbc.Card([
+                html.Legend('Saldo mensal', className='card-title'),
+                html.Div(id='saldo-mensal', className='card-text'),
+            ], style={'height': '100%',
+                      'padding': '20px',
+                      'font-size': '20px'})
+        ], width=4),
+        dbc.Col([
+            dbc.Card([
+                html.Legend('Saldo diário', className='card-title'),
+                html.Div(id='saldo-diario', className='card-text'),
             ], style={'height': '100%',
                       'padding': '20px',
                       'font-size': '20px'})
@@ -138,17 +186,26 @@ layout = dbc.Col([
                 'padding-top': '20px',
                 'padding-bottom': '20px'}),
     dbc.Row([
-        dbc.Col([], width=4),
         dbc.Col([
             dbc.Card([
-                html.Div(id='melhor-ano', className='card-text'),
+                html.Div(id='melhor-ano', className='card-text')
+            ], style={'height': '100%',
+                      'padding': '20px',
+                      'font-size': '20px'})], width=4),
+        dbc.Col([
+            dbc.Card([
                 html.Div(id='melhor-mes', className='card-text'),
-                html.Div(id='melhor-dia', className='card-text'),
             ], style={'height': '100%',
                       'padding': '20px',
                       'font-size': '20px'})
             ], width=4),
-        dbc.Col([], width=4),
+        dbc.Col([
+            dbc.Card([
+                html.Div(id='melhor-dia', className='card-text')
+            ], style={'height': '100%',
+                      'padding': '20px',
+                      'font-size': '20px'})
+        ], width=4),
     ]),
     html.Br(),
     html.Br()
@@ -241,14 +298,15 @@ def update_output(data_despesa, data_receita, ano, mes, dia, theme):
     )
     return fig
 
+
 @app.callback(
-    [Output('media-anual', 'children'),
-     Output('media-ano', 'children')],
+    Output('media-anual', 'children'),
     [Input('store-despesas', 'data'),
     Input('store-receitas', 'data'),
-    Input("checklist-ano", "value")]
+    Input("checklist-ano", "value"),
+    Input("checklist-tipo", "value")]
 )
-def update_media(data_despesa, data_receita, ano):
+def update_media(data_despesa, data_receita, ano, tipo):
     df_ds = pd.DataFrame(data_despesa)
     df_rc = pd.DataFrame(data_receita)
     
@@ -257,30 +315,48 @@ def update_media(data_despesa, data_receita, ano):
 
     dfs = [df_ds, df_rc]
 
-    df_rc['Output'] = 'Receitas'
-    df_ds['Output'] = 'Despesas'
+    df_rc['Output'] = 'Receita'
+    df_ds['Output'] = 'Despesa'
     df_final = pd.concat(dfs)
     
     df_final['Ano'] = df_final['Data'].dt.year
 
-    df_final = df_final[df_final['Ano'].isin(ano)]
+    df_final = df_final[df_final['Ano'].isin(ano) & df_final['Output'].isin(tipo)]
 
-    media_anual = df_final.groupby('Ano')['Valor'].sum().mean()
+    media_anual = df_final.groupby(['Ano', 'Output'])['Valor'].mean()
     
-    year = ''
-    for i in ano:
-        year = year + str(i) + ', '
+    media_anual = media_anual.to_frame()
+    
+    media_anual.reset_index(inplace=True)
+    media_anual.rename(columns={'Output': 'Tipo'}, inplace=True)
+    
+    # Função para formatar os valores
+    def formatar_valor(valor):
+        return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
 
-    return f'R$ {media_anual:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.'), f'Anos: {year}'
+    # Aplicar a formatação para a coluna 'Valor'
+    media_anual['Valor'] = media_anual['Valor'].apply(formatar_valor)
+    
+    tabela = dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in media_anual.columns],
+        data=media_anual.reset_index().to_dict('records'),
+        style_table={'overflowX': 'auto'},  # Para adicionar rolagem horizontal se necessário
+    )
+    
+    return tabela
+    
+
 
 @app.callback(
-    [Output('media-mensal', 'children'),
-     Output('media-mes', 'children')],
+    Output('media-mensal', 'children'),
     [Input('store-despesas', 'data'),
     Input('store-receitas', 'data'),
-    Input("checklist-mes", "value")]
+    Input("checklist-mes", "value"),
+    Input("checklist-ano", "value"),
+    Input("checklist-tipo", "value")]
 )
-def update_media(data_despesa, data_receita, mes):
+def update_media(data_despesa, data_receita, mes, ano, tipo):
     df_ds = pd.DataFrame(data_despesa)
     df_rc = pd.DataFrame(data_receita)
     
@@ -289,30 +365,55 @@ def update_media(data_despesa, data_receita, mes):
 
     dfs = [df_ds, df_rc]
 
-    df_rc['Output'] = 'Receitas'
-    df_ds['Output'] = 'Despesas'
+    df_rc['Output'] = 'Receita'
+    df_ds['Output'] = 'Despesa'
     df_final = pd.concat(dfs)
     
+    df_final['Ano'] = df_final['Data'].dt.year
     df_final['Mês'] = df_final['Data'].dt.month
 
-    df_final = df_final[df_final['Mês'].isin(mes)]
+    df_final = df_final[df_final['Ano'].isin(ano) & df_final['Mês'].isin(mes) & df_final['Output'].isin(tipo)]
 
-    media_mensal = df_final.groupby('Mês')['Valor'].sum().mean()
+    media_mensal = df_final.groupby(['Ano', 'Mês', 'Output'])['Valor'].mean()
     
-    month = ''
-    for i in mes:
-        month = month + calendar.month_name[i].capitalize() + ', '
+    media_mensal = media_mensal.to_frame()
+    
+    media_mensal.reset_index(inplace=True)
+    media_mensal.rename(columns={'Output': 'Tipo'}, inplace=True)
+    
+    # Função para formatar os valores
+    def formatar_valor(valor):
+        return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    # Função para mudar o mês de número para nome
+    def formatar_mes(mes):
+        return calendar.month_name[mes].capitalize()
 
-    return f'R$ {media_mensal:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.'), f'Meses: {month}'
+    # Aplicar a formatação para a coluna 'Valor'
+    media_mensal['Valor'] = media_mensal['Valor'].apply(formatar_valor)
+    media_mensal['Mês'] = media_mensal['Mês'].apply(formatar_mes)
+    
+    tabela = dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in media_mensal.columns],
+        data=media_mensal.reset_index().to_dict('records'),
+        style_table={'overflowX': 'auto'},  # Para adicionar rolagem horizontal se necessário
+    )
+    
+    return tabela
+
+    
 
 @app.callback(
-    [Output('media-diaria', 'children'),
-     Output('media-dia', 'children')],
+    Output('media-diaria', 'children'),
     [Input('store-despesas', 'data'),
     Input('store-receitas', 'data'),
-    Input("checklist-dia", "value")]
+    Input("checklist-dia", "value"),
+    Input("checklist-mes", "value"),
+    Input("checklist-ano", "value"),
+    Input("checklist-tipo", "value")]
 )
-def update_media(data_despesa, data_receita, dia):
+def update_media(data_despesa, data_receita, dia, mes, ano, tipo):
     df_ds = pd.DataFrame(data_despesa)
     df_rc = pd.DataFrame(data_receita)
     
@@ -321,21 +422,220 @@ def update_media(data_despesa, data_receita, dia):
 
     dfs = [df_ds, df_rc]
 
-    df_rc['Output'] = 'Receitas'
-    df_ds['Output'] = 'Despesas'
+    df_rc['Output'] = 'Receita'
+    df_ds['Output'] = 'Despesa'
     df_final = pd.concat(dfs)
     
     df_final['Dia_semana'] = df_final['Data'].dt.dayofweek
+    df_final['Mês'] = df_final['Data'].dt.month
+    df_final['Ano'] = df_final['Data'].dt.year
 
-    df_final = df_final[df_final['Dia_semana'].isin(dia)]
+    df_final = df_final[df_final['Dia_semana'].isin(dia) & df_final['Mês'].isin(mes) & df_final['Ano'].isin(ano) & df_final['Output'].isin(tipo)]
 
-    media_diaria = df_final.groupby('Dia_semana')['Valor'].sum().mean()
+    media_diaria = df_final.groupby(['Ano', 'Mês', 'Dia_semana', 'Output'])['Valor'].mean()
     
-    day = ''
-    for i in dia:
-        day = day + calendar.day_name[i].capitalize() + ', '
+    media_diaria = media_diaria.to_frame()
+    
+    media_diaria.reset_index(inplace=True)
+    media_diaria.rename(columns={'Output': 'Tipo'}, inplace=True)
+    
+    # Função para formatar os valores
+    def formatar_valor(valor):
+        return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    # Função para mudar o mês de número para nome
+    def formatar_mes(mes):
+        return calendar.month_name[mes].capitalize()
+    
+    # Função para mudar o dia da semana de número para nome
+    def formatar_dia(dia):
+        return calendar.day_name[dia].capitalize()
 
-    return f'R$ {media_diaria:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.'), f'Dias: {day}'
+    # Aplicar a formatação para a coluna 'Valor'
+    media_diaria['Valor'] = media_diaria['Valor'].apply(formatar_valor)
+    media_diaria['Mês'] = media_diaria['Mês'].apply(formatar_mes)
+    media_diaria['Dia_semana'] = media_diaria['Dia_semana'].apply(formatar_dia)
+    
+    tabela = dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in media_diaria.columns],
+        data=media_diaria.reset_index().to_dict('records'),
+        style_table={'overflowX': 'auto'},  # Para adicionar rolagem horizontal se necessário
+    )
+    
+    return tabela
+
+@app.callback(
+    Output('saldo-anual', 'children'),
+    [Input('store-despesas', 'data'),
+    Input('store-receitas', 'data'),
+    Input("checklist-ano", "value")]
+)
+def update_saldo(data_despesa, data_receita, ano):
+    # Carrega os dados em DataFrames
+    df_rc = pd.DataFrame(data_receita)
+    df_ds = pd.DataFrame(data_despesa)
+    
+    # Converte a coluna 'Data' para datetime
+    df_rc['Data'] = pd.to_datetime(df_rc['Data'])
+    df_ds['Data'] = pd.to_datetime(df_ds['Data'])
+
+    df_rc['Valor_receita'] = df_rc['Valor']
+    df_ds['Valor_despesa'] = df_ds['Valor']
+    
+    
+    df_rc['Ano'] = df_rc['Data'].dt.year
+    df_ds['Ano'] = df_ds['Data'].dt.year
+        
+    df_saldo = pd.merge(df_rc, df_ds, on='Data', how='outer')
+    df_saldo.fillna(0, inplace=True)
+    df_saldo['Saldo'] = df_saldo['Valor_receita'] - df_saldo['Valor_despesa']
+    
+    df_saldo['Ano'] = df_saldo['Data'].dt.year
+    df_saldo = df_saldo.groupby(['Ano'])['Saldo'].sum() 
+    
+    df_saldo = df_saldo.to_frame()
+    
+    df_saldo.reset_index(inplace=True)
+    
+    saldo_anual = df_saldo[df_saldo['Ano'].isin(ano)]
+    
+    # Função para formatar os valores
+    def formatar_valor(valor):
+        return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    saldo_anual['Saldo'] = saldo_anual['Saldo'].apply(formatar_valor)
+    
+    tabela = dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in saldo_anual.columns],
+        data=saldo_anual.reset_index().to_dict('records'),
+        style_table={'overflowX': 'auto'},  # Para adicionar rolagem horizontal se necessário
+    )
+    
+    return tabela
+
+@app.callback(
+    Output('saldo-mensal', 'children'),
+    [Input('store-despesas', 'data'),
+    Input('store-receitas', 'data'),
+    Input("checklist-mes", "value"),
+    Input("checklist-ano", "value")]
+)
+def update_saldo(data_despesa, data_receita, mes, ano):
+    # Carrega os dados em DataFrames
+    df_rc = pd.DataFrame(data_receita)
+    df_ds = pd.DataFrame(data_despesa)
+    
+    # Converte a coluna 'Data' para datetime
+    df_rc['Data'] = pd.to_datetime(df_rc['Data'])
+    df_ds['Data'] = pd.to_datetime(df_ds['Data'])
+
+    df_rc['Valor_receita'] = df_rc['Valor']
+    df_ds['Valor_despesa'] = df_ds['Valor']
+    
+    
+    df_rc['Ano'] = df_rc['Data'].dt.year
+    df_ds['Ano'] = df_ds['Data'].dt.year
+        
+    df_saldo = pd.merge(df_rc, df_ds, on='Data', how='outer')
+    df_saldo.fillna(0, inplace=True)
+    df_saldo['Saldo'] = df_saldo['Valor_receita'] - df_saldo['Valor_despesa']
+    
+    df_saldo['Ano'] = df_saldo['Data'].dt.year
+    df_saldo['Mês'] = df_saldo['Data'].dt.month
+    df_saldo = df_saldo.groupby(['Ano', 'Mês'])['Saldo'].sum() 
+    
+    df_saldo = df_saldo.to_frame()
+    
+    df_saldo.reset_index(inplace=True)
+    
+    saldo_mensal = df_saldo[df_saldo['Ano'].isin(ano) & df_saldo['Mês'].isin(mes)]
+    
+    # Função para formatar os valores
+    def formatar_valor(valor):
+        return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    # Função para mudar o mês de número para nome
+    def formatar_mes(mes):
+        return calendar.month_name[mes].capitalize()
+    
+    saldo_mensal['Saldo'] = saldo_mensal['Saldo'].apply(formatar_valor)
+    saldo_mensal['Mês'] = saldo_mensal['Mês'].apply(formatar_mes)
+    
+    tabela = dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in saldo_mensal.columns],
+        data=saldo_mensal.reset_index().to_dict('records'),
+        style_table={'overflowX': 'auto'},  # Para adicionar rolagem horizontal se necessário
+    )
+    
+    return tabela
+
+@app.callback(
+    Output('saldo-diario', 'children'),
+    [Input('store-despesas', 'data'),
+    Input('store-receitas', 'data'),
+    Input("checklist-dia", "value"),
+    Input("checklist-mes", "value"),
+    Input("checklist-ano", "value")]
+)
+def update_saldo(data_despesa, data_receita, dia, mes, ano):
+    # Carrega os dados em DataFrames
+    df_rc = pd.DataFrame(data_receita)
+    df_ds = pd.DataFrame(data_despesa)
+    
+    # Converte a coluna 'Data' para datetime
+    df_rc['Data'] = pd.to_datetime(df_rc['Data'])
+    df_ds['Data'] = pd.to_datetime(df_ds['Data'])
+
+    df_rc['Valor_receita'] = df_rc['Valor']
+    df_ds['Valor_despesa'] = df_ds['Valor']
+    
+    
+    df_rc['Ano'] = df_rc['Data'].dt.year
+    df_ds['Ano'] = df_ds['Data'].dt.year
+        
+    df_saldo = pd.merge(df_rc, df_ds, on='Data', how='outer')
+    df_saldo.fillna(0, inplace=True)
+    df_saldo['Saldo'] = df_saldo['Valor_receita'] - df_saldo['Valor_despesa']
+    
+    df_saldo['Ano'] = df_saldo['Data'].dt.year
+    df_saldo['Mês'] = df_saldo['Data'].dt.month
+    df_saldo['Dia_semana'] = df_saldo['Data'].dt.dayofweek
+    df_saldo = df_saldo.groupby(['Ano', 'Mês', 'Dia_semana'])['Saldo'].sum() 
+    
+    df_saldo = df_saldo.to_frame()
+    
+    df_saldo.reset_index(inplace=True)
+    
+    saldo_diario = df_saldo[df_saldo['Ano'].isin(ano) & df_saldo['Mês'].isin(mes) & df_saldo['Dia_semana'].isin(dia)]
+    
+    # Função para mudar o dia da semana de número para nome
+    def formatar_dia(dia):
+        return calendar.day_name[dia].capitalize()
+    
+    # Função para formatar os valores
+    def formatar_valor(valor):
+        return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    # Função para mudar o mês de número para nome
+    def formatar_mes(mes):
+        return calendar.month_name[mes].capitalize()
+    
+    saldo_diario['Saldo'] = saldo_diario['Saldo'].apply(formatar_valor)
+    saldo_diario['Mês'] = saldo_diario['Mês'].apply(formatar_mes)
+    saldo_diario['Dia_semana'] = saldo_diario['Dia_semana'].apply(formatar_dia)
+    
+    tabela = dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in saldo_diario.columns],
+        data=saldo_diario.reset_index().to_dict('records'),
+        style_table={'overflowX': 'auto'},  # Para adicionar rolagem horizontal se necessário
+    )
+    
+    return tabela
+
 
 @app.callback(
     [Output('melhor-ano', 'children'),

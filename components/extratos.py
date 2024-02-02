@@ -10,6 +10,12 @@ import pandas as pd
 from conexao_banco import *
 from globals import *
 from datetime import datetime, date
+import plotly.figure_factory as ff
+
+
+# Função para formatar os valores
+def formatar_valor(valor):
+    return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
 
 
 
@@ -85,6 +91,8 @@ def imprimir_tabela(data):
 
     # Substituir os valores '0' e '1' por 'Não' e 'Sim'
     df['Fixo'] = df['Fixo'].replace({'0': 'Não', '1': 'Sim'})
+    
+    df['Valor'] = df['Valor'].apply(formatar_valor)
 
     df = df.fillna('-')
     df.sort_values(by='Data', ascending=False)
@@ -109,7 +117,7 @@ def imprimir_tabela(data):
         page_current=0,             
         page_size=10,                        
     ),
-
+    
     return tabela
 
 # Tabela Receitas
@@ -126,6 +134,8 @@ def imprimir_tabela(data):
 
     # Substituir os valores '0' e '1' por 'Não' e 'Sim'
     df['Fixo'] = df['Fixo'].replace({'0': 'Não', '1': 'Sim'})
+    
+    df['Valor'] = df['Valor'].apply(formatar_valor)
 
     df = df.fillna('-')
     df.sort_values(by='Data', ascending=False)
@@ -160,7 +170,7 @@ def imprimir_tabela(data):
     [Input('store-despesas', 'data')]
 )
 def bar_chart(data):
-    df = pd.DataFrame(data)   
+    df = pd.DataFrame(data)
     df_grouped = df.groupby("Categoria").sum()[["Valor"]].reset_index()
     graph = px.bar(df_grouped, x='Categoria', y='Valor', title="Despesas Gerais")
     graph.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
@@ -174,8 +184,9 @@ def bar_chart(data):
 def display_desp(data):
     df = pd.DataFrame(data)
     valor = df['Valor'].sum()
+    valor = formatar_valor(valor)
     
-    return f"R$ {valor:.2f}"
+    return f"R$ {valor}"
 
 
 # Bar Graph            
@@ -198,7 +209,8 @@ def bar_chart(data):
 def display_desp(data):
     df = pd.DataFrame(data)
     valor = df['Valor'].sum()
+    valor = formatar_valor(valor)
     
-    return f"R$ {valor:.2f}"
+    return f"R$ {valor}"
 
 

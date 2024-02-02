@@ -62,7 +62,8 @@ layout = dbc.Col([
                 ], width=6),
                 dbc.Col([
                     dbc.Label('Valor: '),
-                    dbc.Input(placeholder="R$ 100.00", id="valor_receita", value="")
+                    dbc.Input(placeholder="R$ 100.00", id="valor_receita", value=""),
+                    html.Div(id='erro-valor-receita', style={'color': 'red'})
                 ])
             ]),
 
@@ -132,7 +133,8 @@ layout = dbc.Col([
                             ], width=6),
                             dbc.Col([
                                 dbc.Label('Valor: '),
-                                dbc.Input(placeholder="R$ 100.00", id="atualiza-valor_receita", value="")
+                                dbc.Input(placeholder="R$ 100.00", id="atualiza-valor_receita", value=""),
+                                html.Div(id='erro-valor-atualiza-receita', style={'color': 'red'})
                             ])
                         ]),
                         dbc.Row([
@@ -166,6 +168,7 @@ layout = dbc.Col([
                             dbc.Col([
                                 dbc.Label('Id: '),
                                 dbc.Input(placeholder="Ex.: 10", id="id-receita-atualizar"),
+                                html.Div(id="erro-id-receita-atualizar", style={'color': 'red'})
                             ], width=6),
                         ]),
                         html.Br(),
@@ -177,6 +180,7 @@ layout = dbc.Col([
                             dbc.Col([
                                 dbc.Label('Informe o id: '),
                                 dbc.Input(placeholder="Ex.: 10", id="id-receita-remover"),
+                                html.Div(id="erro-id-receita-remover", style={'color': 'red'})
                                 ], width=6),
                         ]),
                         dbc.Button('Remover Receita', id='remover_receita', color='danger', style={'margin-top': '10px'}, className='float-end'),
@@ -208,7 +212,8 @@ layout = dbc.Col([
                 ], width=6),
                 dbc.Col([
                     dbc.Label('Valor: '),
-                    dbc.Input(placeholder="R$ 100.00", id="valor_despesa", value="")
+                    dbc.Input(placeholder="R$ 100.00", id="valor_despesa", value=""),
+                    html.Div(id='erro-valor-despesa', style={'color': 'red'})
                 ])
             ]),
 
@@ -282,7 +287,8 @@ layout = dbc.Col([
                             ], width=6),
                             dbc.Col([
                                 dbc.Label('Valor: '),
-                                dbc.Input(placeholder="R$ 100.00", id="atualiza-valor_despesa", value="")
+                                dbc.Input(placeholder="R$ 100.00", id="atualiza-valor_despesa", value=""),
+                                html.Div(id='erro-valor-atualiza-despesa', style={'color': 'red'})
                             ])
                         ]),
                         dbc.Row([
@@ -316,6 +322,7 @@ layout = dbc.Col([
                             dbc.Col([
                                 dbc.Label('Id: '),
                                 dbc.Input(placeholder="Ex.: 10", id="id-despesa-atualizar"),
+                                html.Div(id="erro-id-despesa-atualizar", style={'color': 'red'})
                             ], width=6),
                         ]),
                         html.Br(),
@@ -327,6 +334,7 @@ layout = dbc.Col([
                             dbc.Col([
                                 dbc.Label('Informe o id: '),
                                 dbc.Input(placeholder="Ex.: 10", id="id-despesa-remover"),
+                                html.Div(id="erro-id-despesa-remover", style={'color': 'red'})
                                 ], width=6),
                         ]),
                         dbc.Button('Remover Despesa', id='remover_despesa', color='danger', style={'margin-top': '10px'}, className='float-end'),
@@ -435,7 +443,7 @@ def gerenciar_despesa(salvar_despesa, atualizar_despesa, remover_despesa, descri
             valor = round(float(valor_atualizar), 2)
             date = pd.to_datetime(data_atualizar).date()
             categoria = categoria_atualizar if categoria_atualizar in cat_despesa else cat_despesa[0]
-            switches = int(fixo_atualizar) if fixo_atualizar in [0, 1] else 0
+            switches = 1 if 2 in switches else 0
             atualizar_registro_despesas(categoria, date, valor, descricao_atualizar, switches, id_atualizar, conn)
 
     elif triggered_id == 'remover_despesa' and remover_despesa:
@@ -491,8 +499,8 @@ def gerenciar_receita(salvar_receita, atualizar_receita, remover_receita, descri
             valor = round(float(valor_atualizar), 2)
             date = pd.to_datetime(data_atualizar).date()
             categoria = categoria_atualizar if categoria_atualizar in cat_receita else cat_receita[0]
-            switches = int(fixo_atualizar) if fixo_atualizar in [0, 1] else 0
-            atualizar_registro_receitas(categoria, date, valor, descricao_atualizar, switches, id_atualizar, conn)
+            fixo_atualizar = 1 if 2 in switches else 0
+            atualizar_registro_receitas(categoria, date, valor, descricao_atualizar, fixo_atualizar, id_atualizar, conn)
 
     elif triggered_id == 'remover_receita' and remover_receita:
         # Implemente a lógica para remover receita

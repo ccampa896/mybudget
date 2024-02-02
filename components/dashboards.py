@@ -11,6 +11,10 @@ from globals import *
 from app import app
 from dash_bootstrap_templates import template_from_url, ThemeChangerAIO
 
+# Função para formatar os valores
+def formatar_valor(valor):
+    return f"{valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
 graph_margin=dict(l=25, r=25, t=25, b=0)
 
 card_icon = {
@@ -141,9 +145,10 @@ layout = dbc.Col([
 def populate_dropdownvalues(data):
     df = pd.DataFrame(data)
     valor = df['Valor'].sum()
+    valor = formatar_valor(valor)
     val = df.Categoria.unique().tolist()
     
-    return ([{"label": x, "value": x} for x in val], val, f"R$ {valor:.2f}")
+    return ([{"label": x, "value": x} for x in val], val, f"R$ {valor}")
 
 
 @app.callback(
@@ -157,9 +162,10 @@ def populate_dropdownvalues(data):
 def populate_dropdownvalues(data):
     df = pd.DataFrame(data)
     valor = df['Valor'].sum()
+    valor = formatar_valor(valor)
     val = df.Categoria.unique().tolist()
     
-    return ([{"label": x, "value": x} for x in val], val, f"R$ {valor:.2f}")
+    return ([{"label": x, "value": x} for x in val], val, f"R$ {valor}")
 
 @app.callback(
     Output("p-saldo-dashboards", "children"),
@@ -172,7 +178,8 @@ def saldo_total(receitas, despesas):
     df_receitas = pd.DataFrame(receitas)
     df_despesas = pd.DataFrame(despesas)
     saldo = df_receitas['Valor'].sum() - df_despesas['Valor'].sum()
-    return f"R$ {saldo:.2f}"
+    saldo = formatar_valor(saldo)
+    return f"R$ {saldo}"
 
 
 @app.callback(
@@ -198,6 +205,7 @@ def update_output(data_despesa, data_receita, despesa, receita, theme):
     df_saldo_mes.to_frame()
     df_saldo_mes = df_saldo_mes.reset_index()
     df_saldo_mes['Acumulado'] = df_saldo_mes['Valor'].cumsum()
+    df_saldo_mes['Acumulado'] = df_saldo_mes['Acumulado'].apply(lambda x: formatar_valor(x))
     df_saldo_mes['Mes'] = df['Mes'].apply(lambda x: calendar.month_abbr[x])
 
     df_ds = df_ds[df_ds['Categoria'].isin(despesa)]
